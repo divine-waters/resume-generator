@@ -73,10 +73,6 @@ const userSchema = new mongoose.Schema({
         minlength: 8
     },
     resumes: [{
-        _id: {
-            type: mongoose.Schema.Types.ObjectId,
-            auto: true
-        },
         name: {
             type: String,
             required: true,
@@ -95,6 +91,14 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+});
+
+// Add a virtual for resume IDs
+userSchema.virtual('resumesWithIds').get(function() {
+    return this.resumes.map((resume, index) => ({
+        ...resume.toObject(),
+        _id: resume._id || `resume_${index}` // Use MongoDB's _id or generate a fallback
+    }));
 });
 
 const User = mongoose.model('User', userSchema);
@@ -212,13 +216,9 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/resumes', auth, async (req, res) => {
     try {
         console.log('Fetching resumes for user:', req.user.email);
-        // Ensure we're sending the full resume objects with their IDs
-        const resumes = req.user.resumes.map(resume => ({
-            _id: resume._id,
-            name: resume.name,
-            content: resume.content,
-            lastModified: resume.lastModified
-        }));
+        // Use the virtual to get resumes with IDs
+        const resumes = req.user.resumesWithIds;
+        console.log('Found resumes:', resumes.map(r => ({ id: r._id, name: r.name })));
         res.json({ resumes });
     } catch (error) {
         console.error('Error fetching resumes:', error);
@@ -228,17 +228,31 @@ app.get('/api/resumes', auth, async (req, res) => {
 
 app.get('/api/resumes/:id', auth, async (req, res) => {
     try {
-        console.log('Fetching resume:', req.params.id, 'for user:', req.user.email);
+        const resumeId = req.params.id;
+        console.log('Fetching resume:', resumeId, 'for user:', req.user.email);
         
-        // Use findOne to search in the resumes array
-        const resume = req.user.resumes.find(r => r._id.toString() === req.params.id);
+        // Try to find the resume by ID
+        let resume = req.user.resumes.id(resumeId);
+        
+        // If not found by MongoDB ID, try to find by index
+        if (!resume && resumeId.startsWith('resume_')) {
+            const index = parseInt(resumeId.split('_')[1]);
+            resume = req.user.resumes[index];
+        }
         
         if (!resume) {
-            console.log('Resume not found:', req.params.id);
+            console.log('Resume not found:', resumeId);
             return res.status(404).json({ error: 'Resume not found' });
         }
         
-        res.json(resume);
+        // Add the ID to the response
+        const resumeWithId = {
+            ...resume.toObject(),
+            _id: resume._id || resumeId
+        };
+        
+        console.log('Found resume:', { id: resumeWithId._id, name: resumeWithId.name });
+        res.json(resumeWithId);
     } catch (error) {
         console.error('Error fetching resume:', error);
         res.status(500).json({ error: 'Server error' });
@@ -255,19 +269,26 @@ app.post('/api/resumes', auth, async (req, res) => {
             return res.status(400).json({ error: 'Name and content are required' });
         }
         
-        // Create a new resume with explicit _id
+        // Create a new resume
         const resume = {
-            _id: new mongoose.Types.ObjectId(),
             name,
             content,
             lastModified: new Date()
         };
         
+        // Add to user's resumes array
         req.user.resumes.push(resume);
         await req.user.save();
-        console.log('Resume saved successfully with ID:', resume._id);
         
-        res.status(201).json({ message: 'Resume saved successfully', resume });
+        // Get the saved resume with its ID
+        const savedResume = req.user.resumes[req.user.resumes.length - 1];
+        const resumeWithId = {
+            ...savedResume.toObject(),
+            _id: savedResume._id || `resume_${req.user.resumes.length - 1}`
+        };
+        
+        console.log('Resume saved successfully:', { id: resumeWithId._id, name: resumeWithId.name });
+        res.status(201).json({ message: 'Resume saved successfully', resume: resumeWithId });
     } catch (error) {
         console.error('Error saving resume:', error);
         res.status(500).json({ error: 'Server error' });
@@ -276,13 +297,24 @@ app.post('/api/resumes', auth, async (req, res) => {
 
 app.delete('/api/resumes/:id', auth, async (req, res) => {
     try {
-        console.log('Deleting resume:', req.params.id, 'for user:', req.user.email);
+        const resumeId = req.params.id;
+        console.log('Deleting resume:', resumeId, 'for user:', req.user.email);
         
-        // Find the index of the resume in the array
-        const resumeIndex = req.user.resumes.findIndex(r => r._id.toString() === req.params.id);
+        // Try to find the resume by ID
+        let resumeIndex = -1;
+        if (resumeId.startsWith('resume_')) {
+            // If it's a generated ID, use the index
+            resumeIndex = parseInt(resumeId.split('_')[1]);
+        } else {
+            // Try to find by MongoDB ID
+            const resume = req.user.resumes.id(resumeId);
+            if (resume) {
+                resumeIndex = req.user.resumes.indexOf(resume);
+            }
+        }
         
         if (resumeIndex === -1) {
-            console.log('Resume not found:', req.params.id);
+            console.log('Resume not found:', resumeId);
             return res.status(404).json({ error: 'Resume not found' });
         }
         

@@ -4,6 +4,7 @@ const API_BASE_URL = 'http://localhost:3000';
 // Auth state management
 let authToken = localStorage.getItem('authToken');
 let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+let isSaving = false; // Global saving state
 
 // DOM Elements
 const accountModal = $('#accountModal');
@@ -16,27 +17,29 @@ const logoutButton = $('#logoutButton');
 const loggedInContent = $('#loggedInContent');
 const authForms = $('#authForms');
 const userEmail = $('#userEmail');
+const saveButton = $('#saveButton');
+const resumeList = $('#resumeList .list-group');
 
 // Show/hide auth elements based on login state
 function updateAuthUI() {
     // Remove all existing click handlers first
-    $('#saveButton').off('click');
-    $('#accountButton').off('click');
-    $('#logoutButton').off('click');
+    saveButton.off('click');
+    accountButton.off('click');
+    logoutButton.off('click');
 
     if (authToken) {
         // Update main buttons
-        $('#saveButton')
+        saveButton
             .text('SAVE')
-            .on('click', handleSave.bind($('#saveButton')[0]));
-        $('#accountButton')
+            .on('click', handleSave);
+        accountButton
             .text('ACCOUNT')
             .show()
             .on('click', (e) => {
                 e.preventDefault();
-                $('#accountModal').modal('show');
+                accountModal.modal('show');
             });
-        $('#logoutButton').show();
+        logoutButton.show();
         
         // Update modal content
         loggedInContent.show();
@@ -47,14 +50,14 @@ function updateAuthUI() {
         loadResumes();
     } else {
         // Update main buttons
-        $('#saveButton')
+        saveButton
             .text('LOGIN TO SAVE')
             .on('click', (e) => {
                 e.preventDefault();
-                $('#accountModal').modal('show');
+                accountModal.modal('show');
             });
-        $('#accountButton').hide();
-        $('#logoutButton').hide();
+        accountButton.hide();
+        logoutButton.hide();
         
         // Update modal content
         loggedInContent.hide();
@@ -62,37 +65,76 @@ function updateAuthUI() {
         userEmail.text('');
         
         // Clear resume list
-        $('#resumeList .list-group').empty();
+        resumeList.empty();
     }
 }
 
-// Handle save button click
+// Handle save operation
 async function handleSave(e) {
-    // Prevent event bubbling
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
     
     if (!authToken) {
-        $('#accountModal').modal('show');
+        accountModal.modal('show');
         return;
     }
     
-    // Prevent multiple prompts
-    if (this.isSaving) return;
-    this.isSaving = true;
+    // Prevent multiple saves
+    if (isSaving) {
+        console.log('Save already in progress');
+        return;
+    }
     
     try {
+        isSaving = true;
+        saveButton.prop('disabled', true).text('SAVING...');
+        
         const resumeName = prompt('Enter a name for this resume:');
         if (!resumeName) {
-            this.isSaving = false;
             return;
         }
         
         const content = $('#page').html();
-        await saveResume(resumeName, content);
+        const sectionVisibility = window.getSectionVisibility();
+        
+        // Save the resume
+        const response = await fetch(`${API_BASE_URL}/api/resumes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                name: resumeName, 
+                content,
+                sectionVisibility 
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to save resume');
+        }
+
+        // Update UI optimistically
+        const resumeWithId = data.resume;
+        const resumeItem = createResumeListItem(resumeWithId);
+        resumeList.prepend(resumeItem);
+        $('#noResumes').hide();
+        
+        showSuccess('Resume saved successfully!');
+        
+        // Show the account modal with the updated list
+        accountModal.modal('show');
+    } catch (error) {
+        console.error('Save error:', error);
+        showError(error.message);
     } finally {
-        // Reset saving flag
-        this.isSaving = false;
+        isSaving = false;
+        saveButton.prop('disabled', false).text('SAVE');
     }
 }
 
@@ -183,52 +225,33 @@ function logout() {
     accountModal.modal('hide');
 }
 
-// Save resume
-async function saveResume(name, content) {
-    if (!authToken) {
-        $('#accountModal').modal('show');
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/resumes`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ name, content })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to save resume');
-        }
-
-        showSuccess('Resume saved successfully!');
-        
-        // Refresh the resume list immediately
-        await loadResumes();
-        
-        // Show the account modal with the updated list
-        $('#accountModal').modal('show');
-    } catch (error) {
-        showError(error.message);
-    }
+// Create resume list item HTML
+function createResumeListItem(resume) {
+    const lastModified = new Date(resume.lastModified).toLocaleString();
+    return `
+        <div class="list-group-item" data-resume-id="${resume._id}">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1">${resume.name}</h5>
+                    <small class="text-muted">Last modified: ${lastModified}</small>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-primary load-resume">Load</button>
+                    <button class="btn btn-sm btn-danger delete-resume">Delete</button>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
-// Load saved resumes
+// Load saved resumes with optimized rendering
 async function loadResumes() {
     if (!authToken) return;
-
-    const resumeList = $('#resumeList .list-group');
-    const noResumes = $('#noResumes');
     
     try {
         // Show loading state
         resumeList.html('<div class="text-center"><p>Loading resumes...</p></div>');
-        noResumes.hide();
+        $('#noResumes').hide();
 
         const response = await fetch(`${API_BASE_URL}/api/resumes`, {
             headers: {
@@ -243,31 +266,22 @@ async function loadResumes() {
         }
 
         // Update resume list in UI
-        resumeList.empty();
-        
         if (data.resumes && data.resumes.length > 0) {
+            const fragment = document.createDocumentFragment();
             data.resumes.forEach(resume => {
-                const lastModified = new Date(resume.lastModified).toLocaleString();
-                const resumeId = resume._id || resume.id; // Handle both MongoDB and custom IDs
-                resumeList.append(`
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="mb-1">${resume.name}</h5>
-                                <small class="text-muted">Last modified: ${lastModified}</small>
-                            </div>
-                            <div>
-                                <button class="btn btn-sm btn-primary" onclick="loadResume('${resumeId}')">Load</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteResume('${resumeId}')">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                `);
+                if (!resume._id) {
+                    console.error('Resume missing ID:', resume);
+                    return;
+                }
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = createResumeListItem(resume);
+                fragment.appendChild(tempDiv.firstElementChild);
             });
-            noResumes.hide();
+            resumeList.empty().append(fragment);
+            $('#noResumes').hide();
         } else {
             resumeList.empty();
-            noResumes.show();
+            $('#noResumes').show();
         }
     } catch (error) {
         console.error('Error loading resumes:', error);
@@ -276,49 +290,60 @@ async function loadResumes() {
                 Failed to load resumes: ${error.message}
             </div>
         `);
-        noResumes.hide();
+        $('#noResumes').hide();
     }
 }
 
-// Load a specific resume
+// Load a specific resume with optimized UI updates
 async function loadResume(resumeId) {
-    if (!authToken) return;
+    if (!authToken || !resumeId) return;
     
-    if (!resumeId) {
-        showError('Invalid resume ID');
-        return;
-    }
-
     try {
+        const loadButton = $(`.load-resume[data-resume-id="${resumeId}"]`);
+        loadButton.prop('disabled', true).text('Loading...');
+        
+        console.log('Attempting to load resume:', resumeId);
         const response = await fetch(`${API_BASE_URL}/api/resumes/${resumeId}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const data = await response.json();
             throw new Error(data.error || `Failed to load resume (${response.status})`);
         }
-
-        const data = await response.json();
         
         // Update the page content
         $('#page').html(data.content);
+        
+        // Restore section visibility if available
+        if (data.sectionVisibility) {
+            window.setSectionVisibility(data.sectionVisibility);
+        }
+        
         showSuccess('Resume loaded successfully!');
         accountModal.modal('hide');
     } catch (error) {
         console.error('Error loading resume:', error);
         showError(error.message);
+    } finally {
+        const loadButton = $(`.load-resume[data-resume-id="${resumeId}"]`);
+        loadButton.prop('disabled', false).text('Load');
     }
 }
 
-// Delete a resume
+// Delete a resume with optimized UI updates
 async function deleteResume(resumeId) {
-    if (!authToken) return;
+    if (!authToken || !resumeId) return;
     
-    if (!resumeId) {
-        showError('Invalid resume ID');
+    const deleteButton = $(`.delete-resume[data-resume-id="${resumeId}"]`);
+    const resumeItem = deleteButton.closest('.list-group-item');
+    
+    // Prevent multiple delete attempts
+    if (deleteButton.prop('disabled')) {
+        console.log('Delete already in progress');
         return;
     }
     
@@ -327,6 +352,10 @@ async function deleteResume(resumeId) {
     }
 
     try {
+        // Disable the button immediately to prevent double-clicks
+        deleteButton.prop('disabled', true).text('Deleting...');
+        
+        console.log('Attempting to delete resume:', resumeId);
         const response = await fetch(`${API_BASE_URL}/api/resumes/${resumeId}`, {
             method: 'DELETE',
             headers: {
@@ -334,16 +363,40 @@ async function deleteResume(resumeId) {
             }
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const data = await response.json();
             throw new Error(data.error || `Failed to delete resume (${response.status})`);
         }
 
+        // Remove the item from the UI immediately
+        resumeItem.remove();
+        
+        // Check if this was the last resume
+        if ($('#resumeList .list-group-item').length === 0) {
+            $('#noResumes').show();
+        }
+        
         showSuccess('Resume deleted successfully!');
-        await loadResumes(); // Refresh the list
+        
+        // Reload the resume list to ensure sync with server
+        await loadResumes();
     } catch (error) {
         console.error('Error deleting resume:', error);
         showError(error.message);
+        
+        // If the error is a 404, the resume is already gone, so remove it from UI
+        if (error.message.includes('404') || error.message.includes('not found')) {
+            resumeItem.remove();
+            if ($('#resumeList .list-group-item').length === 0) {
+                $('#noResumes').show();
+            }
+        }
+    } finally {
+        // Re-enable the button if the item still exists
+        if (resumeItem.length) {
+            deleteButton.prop('disabled', false).text('Delete');
+        }
     }
 }
 
@@ -383,5 +436,22 @@ $(document).ready(() => {
         const email = $('#loginEmail').val();
         const password = $('#loginPassword').val();
         await login(email, password);
+    });
+
+    // Use event delegation for resume actions with optimized selectors
+    resumeList.on('click', '.load-resume', function(e) {
+        e.preventDefault();
+        const resumeId = $(this).closest('.list-group-item').data('resume-id');
+        if (resumeId) {
+            loadResume(resumeId);
+        }
+    });
+
+    resumeList.on('click', '.delete-resume', function(e) {
+        e.preventDefault();
+        const resumeId = $(this).closest('.list-group-item').data('resume-id');
+        if (resumeId) {
+            deleteResume(resumeId);
+        }
     });
 }); 

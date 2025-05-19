@@ -420,3 +420,45 @@ function getSelectionContainerElement()
 function insertAfter(referenceNode,newNode) {
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
+
+// Section toggle handling
+$(document).ready(function() {
+    // Initialize section visibility based on checkboxes
+    $('input[name="sectionToggle"]').each(function() {
+        const sectionId = $(this).val();
+        const isChecked = $(this).prop('checked');
+        $(`#${sectionId}`).toggle(isChecked);
+    });
+
+    // Handle section toggle changes
+    $('input[name="sectionToggle"]').on('change', function() {
+        const sectionId = $(this).val();
+        const isChecked = $(this).prop('checked');
+        
+        // Toggle section visibility with animation
+        $(`#${sectionId}`).slideToggle(300, function() {
+            // After animation, ensure proper visibility
+            $(this).css('display', isChecked ? 'block' : 'none');
+        });
+    });
+
+    // Save section visibility state when saving resume
+    window.getSectionVisibility = function() {
+        const visibility = {};
+        $('input[name="sectionToggle"]').each(function() {
+            visibility[$(this).val()] = $(this).prop('checked');
+        });
+        return visibility;
+    };
+
+    // Restore section visibility state when loading resume
+    window.setSectionVisibility = function(visibility) {
+        if (!visibility) return;
+        
+        Object.entries(visibility).forEach(([sectionId, isVisible]) => {
+            const checkbox = $(`input[name="sectionToggle"][value="${sectionId}"]`);
+            checkbox.prop('checked', isVisible);
+            $(`#${sectionId}`).toggle(isVisible);
+        });
+    };
+});
