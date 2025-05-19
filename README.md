@@ -1,27 +1,52 @@
-# Resume generator
-Web based editor to create Resume in a customizable template  
-  
-Try it : https://nitish6174.github.io/resume-generator/  
+# Resume Generator
 
-**Note** : Click the "VIEW INSTRUCTIONS" button in the editor to read usage instructions.
+A modern, customizable resume generator with user authentication and cloud storage.
 
-#### Features
-- Resume content can be edited just like a normal document editor (cut,copy,undo etc).
-- Entire sections can be added, reordered, removed just by cut,copy,pasting method.
-- Section visibility can be toggled while retaining the content.
-- Options provided in the left panel to modify the template and formatting.
-- Sub-points can be added with various bullet styles and adjustable indentation.
-- Script provided to merge multiple pages and compress the PDF.
+## Live Demo
 
-#### Using the merge & compress script
-- You must be able to run python file on your system for this.
-- Save the individual pages in PDF format with name ```1.pdf``` , ```2.pdf```
-- Download the ```compress_pdf.py``` file and open it in a text editor.
-- Set the following variables :
-	- ```dir_path``` : Directory path where you saved the PDFs for individual page
-	- ```num_of_pages``` : Number of files to merge (i.e. pages in your Resume)
-	- ```out_file``` : Name of output file
-- Run this python file.
-- Note: As this creates a new PDF file, you may have to see permission settings or run with sudo on terminal.
+Visit the live demo at: https://your-github-username.github.io/resume-generator/
 
-**Note** : Use Google Chrome
+## Features
+
+- Modern, responsive design
+- Real-time editing and formatting
+- Customizable templates
+- User authentication
+- Cloud storage for resumes
+- PDF export
+- Section visibility controls
+- Custom styling options
+
+## Development
+
+For local development:
+1. Clone the repository
+2. Run `npm install` to install dependencies
+3. Start the backend server: `npm run dev`
+4. Open `index.html` in your browser
+
+## Deployment
+
+This project uses GitHub Actions for automatic deployment to GitHub Pages. The deployment workflow:
+1. Triggers automatically when changes are pushed to the `gh-pages` branch
+2. Can also be triggered manually from the Actions tab
+3. Builds and deploys the site to GitHub Pages
+4. Excludes unnecessary files from deployment
+
+To deploy manually:
+1. Push your changes to the `gh-pages` branch
+2. Go to the Actions tab in your repository
+3. Select the "Deploy to GitHub Pages" workflow
+4. Click "Run workflow"
+
+## API
+
+The frontend requires a backend API for authentication and resume storage. The API endpoint is configured in `js/auth.js`.
+
+## Browser Support
+
+For best results, use Google Chrome. Other browsers may have limited support for some features.
+
+## License
+
+MIT License

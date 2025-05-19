@@ -1,4 +1,3 @@
-
 body {
 	background-color: #555;
 	line-height: 1.4em;
@@ -74,18 +73,23 @@ a.blue:hover {
 	border-bottom: 1px solid blue;
 }
 
+ul, li {
+	margin-left: 0 !important;
+	padding-left: 0 !important;
+}
+
 ul {
-	margin-left: 20px;
-	padding-left: 20px;
+	margin-left: 20px !important;
+	padding-left: 20px !important;
 }
+
 li {
-	margin-top: 1%;
+	margin-top: 1% !important;
 }
+
 li li {
-	margin-top: 0.25%;
+	margin-top: 0.25% !important;
 }
-
-
 
 .star {
 	margin-top: 5px;
@@ -281,4 +285,121 @@ td.header {
 }
 #notice a {
 	color: #F1C40F;
+}
+
+/* Auth styles */
+#authError, #authSuccess {
+    margin-bottom: 20px;
+}
+
+.nav-tabs {
+    margin-bottom: 20px;
+}
+
+.tab-content {
+    padding: 20px 0;
+}
+
+#resumeList {
+    margin-top: 30px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.resume-item {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background: #f9f9f9;
+}
+
+.resume-item h5 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.resume-item p {
+    margin: 0 0 10px 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.resume-item button {
+    margin-right: 10px;
+}
+
+.help-block {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Modal improvements */
+.modal-content {
+    border-radius: 6px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    border-radius: 6px 6px 0 0;
+}
+
+.modal-title {
+    color: #333;
+    font-weight: 500;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+/* Auth state indicators */
+#saveButton.authenticated {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+#saveButton.authenticated:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* Loading states */
+.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
