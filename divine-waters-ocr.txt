@@ -1,0 +1,51 @@
+Garrett Glick
+QA Test Automation Engineer
+Denver, CO
++1-7205877153
+glickgarrett85@gmail.com
+github.com/divine-waters
+www.linkedin.com/in/holisticautomation
+Mission Statement
+Coming from a diverse background in education, strategy, and production bridging gaps between users, developers, and stakeholders is second-nature. I build automation systems that ensure quality, boost reliability, and free teams to focus on innovation. My cross-functional fluency enables me to lead QA efforts that are technically sound and strategically aligned—from test architecture to launch.
+Experience
+QA LEAD | JUICE PHARMA WORLDWIDE LLC | New York, NY Apr 2019 - Feb 2024
+
+• Developed Automated Accessibility ADA Compliancy Tool with Deque's axe-core and Cypress, generating reports with violations and code-level fixes assuring adherence to the WCAG.
+• Created emulator utilizing Playwright to crawl webpages mimicking Googlebot, producing screenshots of how site renders to Google when crawling client sites weighing in on its rank.
+• Built CI/CD pipelines and implemented shift-left testing through GitHub Actions to run automated tests triggered by push w/reports.
+• Replaced 85% manual tests transitioning to Cypress and Playwright tests suites, reducing QA cycles by 60% and accelerating release cadence by 30%.
+
+QA DIRECTOR | SMALL PLANET DIGITAL | Brooklyn, NY Aug 2018 - Apr 2019
+
+• Built QA department from scratch. Hired analyst interns, streamlined dev/qa cycles and relieved native app testing from producers. Formalized QA test planning, bug reporting and build automation.
+
+PRODUCER | SMALL PLANET DIGITAL | Brooklyn, NY Jan 2015 - Aug 2018
+
+• Producer of Disney and FanDuel apps. FanDuel app achieving 500,000+ users within the first month and Disney app exceeding projections by 150,000+ downloads in first month.
+
+PRODUCT OWNER | FAHRENHEIT MARKETING | Austin, TX Jul 2013 - Feb 2014
+
+ACCOUNT MANAGER | FAHRENHEIT MARKETING | Austin, TX Jul 2012 - Jul 2013
+
+ACCOUNT MANAGER | BLACKBOX SOCIAL MEDIA | Austin, TX Jun 2011 - Jul 2012
+
+ESL TEACHER at 'LANGUAGE CUBE/KID'S COLLEGE' | Seoul, South Korea 2009 - 2011
+
+
+
+
+
+
+Technical skills
+Programming languages : JavaScript, TypeScript, Python
+Testing Tools and Frameworks : Cypress, Playwright, WebDriverIO, Selenium, Puppeteer, Expresso,
+XCUITest, Postman, Litmus, Zephyr for JIRA, Email On Acid
+Agile Testing Techniques : Unit, Integration, Smoke, System, Regression, Performance, Load
+Balancing, Exploratory, UAT Testing
+Accessibility Tools and Frameworks : Deque's Dev-Tools and Auditor, Accessibility Scanner,
+TalkBack, VoiceOver, Google's Accessibility Testing Framework (ATF)
+Operating system : Windows, Linux, MacOS, iOS, Android, Windows Subsystem for Linux (WSL)
+AI: Gemini Code Assist, Devin, CodeGPT, GPT-4, Cursor
+QA and Agile Methodologies: Shift-Left QA, Software Development Lifecycle (SDLC), Six Sigma
+Analytics and Data Reporting: Google Analytics 4, Google Tag Manager, Mixpanel
+Miscellaneous: Git, Unix Commands, Shell Scripting, Visual Studio Code, Android Studio SDK Tools.

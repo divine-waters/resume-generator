@@ -1,4 +1,110 @@
-document.querySelector('#page').contentEditable = true;
+// Initialize when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Make the page content editable
+    document.querySelector('#page').contentEditable = true;
+
+    // Add event listener for the save button
+    document.getElementById('saveButton').addEventListener('click', handleSave);
+
+    // Add event listener for account form submission
+    document.getElementById('accountForm').addEventListener('submit', handleAccountCreation);
+
+    // Load any saved content
+    loadResumeContent();
+
+    // Add auto-save functionality with debounce
+    let saveTimeout;
+    document.querySelector('#page').addEventListener('input', function() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(handleSave, 1000); // Save 1 second after last change
+    });
+});
+
+// Handle save attempt
+function handleSave() {
+    const hasAccount = localStorage.getItem('hasAccount');
+    if (!hasAccount) {
+        // Show account creation modal
+        $('#accountModal').modal('show');
+        return;
+    }
+    // If user has account, proceed with save
+    saveResumeContent();
+}
+
+// Handle account creation
+function handleAccountCreation(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('accountEmail').value;
+    const password = document.getElementById('accountPassword').value;
+
+    // Here you would typically make an API call to create the account
+    // For now, we'll just simulate a successful account creation
+    try {
+        // Store account info (in a real app, this would be handled by your backend)
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('hasAccount', 'true');
+        
+        // Close the modal
+        $('#accountModal').modal('hide');
+        
+        // Show success message
+        alert('Account created successfully! Your resume will now be saved.');
+        
+        // Proceed with saving the resume
+        saveResumeContent();
+    } catch (error) {
+        console.error('Error creating account:', error);
+        alert('There was an error creating your account. Please try again.');
+    }
+}
+
+// Save resume content function
+function saveResumeContent() {
+    try {
+        const content = document.querySelector('#page').innerHTML;
+        const userEmail = localStorage.getItem('userEmail');
+        
+        // Save content with user's email as part of the key
+        const saveKey = userEmail ? `resumeContent_${userEmail}` : 'resumeContent';
+        localStorage.setItem(saveKey, content);
+        
+        // Show save confirmation
+        const saveButton = document.getElementById('saveButton');
+        const originalText = saveButton.textContent;
+        saveButton.textContent = 'SAVED!';
+        saveButton.classList.remove('btn-info');
+        saveButton.classList.add('btn-success');
+        
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            saveButton.textContent = originalText;
+            saveButton.classList.remove('btn-success');
+            saveButton.classList.add('btn-info');
+        }, 2000);
+    } catch (error) {
+        console.error('Error saving resume:', error);
+        alert('There was an error saving your changes. Please try again.');
+    }
+}
+
+// Load saved content function
+function loadResumeContent() {
+    try {
+        const userEmail = localStorage.getItem('userEmail');
+        const saveKey = userEmail ? `resumeContent_${userEmail}` : 'resumeContent';
+        const savedContent = localStorage.getItem(saveKey);
+        
+        if (savedContent) {
+            document.querySelector('#page').innerHTML = savedContent;
+            console.log('Resume content loaded successfully');
+        }
+    } catch (error) {
+        console.error('Error loading resume:', error);
+        alert('There was an error loading your saved content.');
+    }
+}
 
 defaultTemplateVars = [ "fontDroid" , "caseNormal" , "titleRuled" , "ruleAbove" , "imageShow" , "rollShow" , "course1" , "tableShow" , "edyearFirst" , "experience1" , "projects1" ]
 
@@ -271,42 +377,6 @@ function changeTemplate(toggleType,toggleValue)
 			break;
 	}
 }
-
-function insertList()
-{
-	node = getSelectionContainerElement();
-	var ul = document.createElement("ul");
-	ul.className = 'decimal';
-	ul.style.marginLeft = '0px';
-	ul.innerHTML = "<li>Sub-point 1 : Description</li><li>Sub-point 2 : Description</li>";
-	insertAfter(node,ul);
-}
-
-function decreaseIndent()
-{
-	node = getSelectionContainerElement();
-	while(node.tagName!='UL')
-		node = node.parentNode;
-	node.style.paddingLeft = parseInt(window.getComputedStyle(node).getPropertyValue("padding-left"))-5;
-}
-
-function increaseIndent()
-{
-	node = getSelectionContainerElement();
-	while(node.tagName!='UL')
-		node = node.parentNode;
-	node.style.paddingLeft = parseInt(window.getComputedStyle(node).getPropertyValue("padding-left"))+5;
-}
-
-function changeListStyle(value)
-{
-	node = getSelectionContainerElement();
-	while(node.tagName!='UL')
-		node = node.parentNode;
-	node.className = value;
-
-}
-
 
 function getSelectionContainerElement()
 {
