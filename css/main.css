@@ -155,7 +155,6 @@ td.header {
 .table.customBordered {
 	border-top: 1px solid #999;
 	border-left: 1px solid #999;
-	width: 100%;
 }
 .table.customBordered tr {
 	border-bottom: 1px solid #999;
@@ -163,7 +162,6 @@ td.header {
 .table.customBordered tr td {
 	padding: 0px 5px 0px 5px;
 	border-right: 1px solid #999;
-	font-size: 13.5px;
 }
 
 
@@ -183,8 +181,7 @@ td.header {
 
 .section-title.ruled.rule-above hr.hr-above {
 	border: 1px solid hsl(0,0%,40%);
-	margin-top: 0px;
-	margin-bottom: 0px;
+	margin-top: 0px; margin-bottom: 0px;
 }
 .section-title.ruled.rule-above hr.hr-below {
 	border: none;
@@ -405,16 +402,4 @@ td.header {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-}
-
-/* Remove the section visibility defaults since jQuery will handle this */
-/* Keep only the spacing between sections */
-.section + .section {
-    margin-top: 20px;
-}
-
-/* Remove old display:none rules */
-#sectionInterest,
-#sectionFooterMessage {
-    /* Remove these since jQuery handles visibility */
 }

@@ -18,16 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(handleSave, 1000); // Save 1 second after last change
     });
-
-    initializeSectionToggles();
-    
-    // Add event listeners to section toggle checkboxes
-    document.querySelectorAll('.section-toggle-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const sectionId = this.getAttribute('data-section');
-            toggleSection(sectionId, this.checked);
-        });
-    });
 });
 
 // Handle save attempt
@@ -73,228 +63,12 @@ function handleAccountCreation(event) {
 // Save resume content function
 function saveResumeContent() {
     try {
-        // Get the current page content
-        const pageContent = document.querySelector('#page').innerHTML;
-        
-        // Define sections in their original order with their template settings
-        const sectionTemplates = [
-            {
-                id: 'sectionMission',
-                template: {
-                    title: 'Mission Statement',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: '<blockquote style="font-size:1.1em; color:#444;">Your mission statement here...</blockquote>'
-                }
-            },
-            {
-                id: 'sectionEducation',
-                template: {
-                    title: 'Education',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: `
-                        <div>
-                            <table class="table customBordered" id="educationTable">
-                                <tbody>
-                                    <tr>
-                                        <td class="header">Degree</td>
-                                        <td class="header">Institute</td>
-                                        <td class="header">Location</td>
-                                        <td class="header">Year</td>
-                                    </tr>
-                                    <tr>
-                                        <td>B.Tech</td>
-                                        <td>Indian Institute of Technology Guwahati</td>
-                                        <td>Guwahati</td>
-                                        <td>2018</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>`
-                }
-            },
-            {
-                id: 'sectionExperience',
-                template: {
-                    title: 'Experience',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: '<div><div><div class="title">Position Title</div><div class="time right">Duration</div></div><div><ul class="disc"></ul></div></div>'
-                }
-            },
-            {
-                id: 'sectionSkills',
-                template: {
-                    title: 'Technical Skills',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: '<div><strong><span class="skillCategory">Category</span> :</strong> Skills here...</div>'
-                }
-            },
-            {
-                id: 'sectionProjects',
-                template: {
-                    title: 'Projects',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: `
-                        <div>
-                            <div>
-                                <div class="title">Project Title</div>
-                                <div class="time right">Duration</div>
-                            </div>
-                            <div>
-                                <ul class="disc">
-                                    <li>Project description point 1</li>
-                                    <li>Project description point 2</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div>
-                            <div>
-                                <div class="title">Another Project</div>
-                                <div class="time right">Duration</div>
-                            </div>
-                            <div>
-                                <ul class="disc">
-                                    <li>Project description point 1</li>
-                                    <li>Project description point 2</li>
-                                </ul>
-                            </div>
-                        </div>`
-                }
-            },
-            {
-                id: 'sectionPublications',
-                template: {
-                    title: 'Publications',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: `
-                        <div>
-                            <div>
-                                <div class="title">Publication Title</div>
-                                <div class="time right">Year</div>
-                            </div>
-                            <div>
-                                <ul class="disc">
-                                    <li>Published in Journal Name</li>
-                                    <li>Authors: Author 1, Author 2</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div>
-                            <div>
-                                <div class="title">Another Publication</div>
-                                <div class="time right">Year</div>
-                            </div>
-                            <div>
-                                <ul class="disc">
-                                    <li>Published in Conference Name</li>
-                                    <li>Authors: Author 1, Author 2</li>
-                                </ul>
-                            </div>
-                        </div>`
-                }
-            },
-            {
-                id: 'sectionAchievements',
-                template: {
-                    title: 'Achievements',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: `
-                        <div>
-                            <ul class="disc">
-                                <li>Achievement 1 - Description of the achievement</li>
-                                <li>Achievement 2 - Description of the achievement</li>
-                                <li>Achievement 3 - Description of the achievement</li>
-                            </ul>
-                        </div>`
-                }
-            },
-            {
-                id: 'sectionResponsibility',
-                template: {
-                    title: 'Positions of Responsibility',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: `
-                        <div>
-                            <ul class="disc">
-                                <li>Position 1 - Description of responsibilities</li>
-                                <li>Position 2 - Description of responsibilities</li>
-                                <li>Position 3 - Description of responsibilities</li>
-                            </ul>
-                        </div>`
-                }
-            },
-            {
-                id: 'sectionCourses',
-                template: {
-                    title: 'Key Courses Taken',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: `
-                        <div>
-                            <ul class="disc">
-                                <li>Course 1 - Brief description</li>
-                                <li>Course 2 - Brief description</li>
-                                <li>Course 3 - Brief description</li>
-                            </ul>
-                        </div>`
-                }
-            },
-            {
-                id: 'sectionCurricular',
-                template: {
-                    title: 'Extra Curriculars',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: `
-                        <div>
-                            <ul class="disc">
-                                <li>Activity 1 - Description of involvement</li>
-                                <li>Activity 2 - Description of involvement</li>
-                                <li>Activity 3 - Description of involvement</li>
-                            </ul>
-                        </div>`
-                }
-            },
-            {
-                id: 'sectionFooterMessage',
-                template: {
-                    title: 'References',
-                    classes: ['section-title', 'ruled', 'rule-above'],
-                    defaultContent: `
-                        <div>
-                            <p class="text">Available upon request</p>
-                        </div>`
-                }
-            }
-        ];
-        
-        // Create a temporary div to check content
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = pageContent;
-        
-        // Check if any sections are missing and restore them with proper template
-        const missingSections = sectionTemplates.filter(section => !tempDiv.querySelector(`#${section.id}`));
-        
-        if (missingSections.length > 0) {
-            console.warn('Restoring missing sections with templates:', missingSections.map(s => s.id));
-            
-            // Create and append missing sections with proper template
-            missingSections.forEach(section => {
-                const sectionHtml = `
-                    <div class="section" id="${section.id}">
-                        <div class="${section.template.classes.join(' ')}">
-                            <hr class="hr-above">
-                            <h4><strong>${section.template.title}</strong></h4>
-                            <hr class="hr-below">
-                        </div>
-                        ${section.template.defaultContent}
-                    </div>
-                `;
-                tempDiv.innerHTML += sectionHtml;
-            });
-        }
-        
-        // Save the complete content
+        const content = document.querySelector('#page').innerHTML;
         const userEmail = localStorage.getItem('userEmail');
+        
+        // Save content with user's email as part of the key
         const saveKey = userEmail ? `resumeContent_${userEmail}` : 'resumeContent';
-        localStorage.setItem(saveKey, tempDiv.innerHTML);
+        localStorage.setItem(saveKey, content);
         
         // Show save confirmation
         const saveButton = document.getElementById('saveButton');
@@ -303,6 +77,7 @@ function saveResumeContent() {
         saveButton.classList.remove('btn-info');
         saveButton.classList.add('btn-success');
         
+        // Reset button after 2 seconds
         setTimeout(() => {
             saveButton.textContent = originalText;
             saveButton.classList.remove('btn-success');
@@ -322,243 +97,8 @@ function loadResumeContent() {
         const savedContent = localStorage.getItem(saveKey);
         
         if (savedContent) {
-            // Store the current section visibility state
-            const currentVisibility = window.getSectionVisibility ? window.getSectionVisibility() : null;
-            
-            // Create a temporary div to check content
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = savedContent;
-            
-            // Use the same section templates as in saveResumeContent
-            const sectionTemplates = [
-                {
-                    id: 'sectionMission',
-                    template: {
-                        title: 'Mission Statement',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: '<blockquote style="font-size:1.1em; color:#444;">Your mission statement here...</blockquote>'
-                    }
-                },
-                {
-                    id: 'sectionEducation',
-                    template: {
-                        title: 'Education',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: `
-                            <div>
-                                <table class="table customBordered" id="educationTable">
-                                    <tbody>
-                                        <tr>
-                                            <td class="header">Degree</td>
-                                            <td class="header">Institute</td>
-                                            <td class="header">Location</td>
-                                            <td class="header">Year</td>
-                                        </tr>
-                                        <tr>
-                                            <td>B.Tech</td>
-                                            <td>Indian Institute of Technology Guwahati</td>
-                                            <td>Guwahati</td>
-                                            <td>2018</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>`
-                    }
-                },
-                {
-                    id: 'sectionExperience',
-                    template: {
-                        title: 'Experience',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: '<div><div><div class="title">Position Title</div><div class="time right">Duration</div></div><div><ul class="disc"></ul></div></div>'
-                    }
-                },
-                {
-                    id: 'sectionSkills',
-                    template: {
-                        title: 'Technical Skills',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: '<div><strong><span class="skillCategory">Category</span> :</strong> Skills here...</div>'
-                    }
-                },
-                {
-                    id: 'sectionProjects',
-                    template: {
-                        title: 'Projects',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: `
-                            <div>
-                                <div>
-                                    <div class="title">Project Title</div>
-                                    <div class="time right">Duration</div>
-                                </div>
-                                <div>
-                                    <ul class="disc">
-                                        <li>Project description point 1</li>
-                                        <li>Project description point 2</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div>
-                                <div>
-                                    <div class="title">Another Project</div>
-                                    <div class="time right">Duration</div>
-                                </div>
-                                <div>
-                                    <ul class="disc">
-                                        <li>Project description point 1</li>
-                                        <li>Project description point 2</li>
-                                    </ul>
-                                </div>
-                            </div>`
-                    }
-                },
-                {
-                    id: 'sectionPublications',
-                    template: {
-                        title: 'Publications',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: `
-                            <div>
-                                <div>
-                                    <div class="title">Publication Title</div>
-                                    <div class="time right">Year</div>
-                                </div>
-                                <div>
-                                    <ul class="disc">
-                                        <li>Published in Journal Name</li>
-                                        <li>Authors: Author 1, Author 2</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div>
-                                <div>
-                                    <div class="title">Another Publication</div>
-                                    <div class="time right">Year</div>
-                                </div>
-                                <div>
-                                    <ul class="disc">
-                                        <li>Published in Conference Name</li>
-                                        <li>Authors: Author 1, Author 2</li>
-                                    </ul>
-                                </div>
-                            </div>`
-                    }
-                },
-                {
-                    id: 'sectionAchievements',
-                    template: {
-                        title: 'Achievements',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: `
-                            <div>
-                                <ul class="disc">
-                                    <li>Achievement 1 - Description of the achievement</li>
-                                    <li>Achievement 2 - Description of the achievement</li>
-                                    <li>Achievement 3 - Description of the achievement</li>
-                                </ul>
-                            </div>`
-                    }
-                },
-                {
-                    id: 'sectionResponsibility',
-                    template: {
-                        title: 'Positions of Responsibility',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: `
-                            <div>
-                                <ul class="disc">
-                                    <li>Position 1 - Description of responsibilities</li>
-                                    <li>Position 2 - Description of responsibilities</li>
-                                    <li>Position 3 - Description of responsibilities</li>
-                                </ul>
-                            </div>`
-                    }
-                },
-                {
-                    id: 'sectionCourses',
-                    template: {
-                        title: 'Key Courses Taken',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: `
-                            <div>
-                                <ul class="disc">
-                                    <li>Course 1 - Brief description</li>
-                                    <li>Course 2 - Brief description</li>
-                                    <li>Course 3 - Brief description</li>
-                                </ul>
-                            </div>`
-                    }
-                },
-                {
-                    id: 'sectionCurricular',
-                    template: {
-                        title: 'Extra Curriculars',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: `
-                            <div>
-                                <ul class="disc">
-                                    <li>Activity 1 - Description of involvement</li>
-                                    <li>Activity 2 - Description of involvement</li>
-                                    <li>Activity 3 - Description of involvement</li>
-                                </ul>
-                            </div>`
-                    }
-                },
-                {
-                    id: 'sectionFooterMessage',
-                    template: {
-                        title: 'References',
-                        classes: ['section-title', 'ruled', 'rule-above'],
-                        defaultContent: `
-                            <div>
-                                <p class="text">Available upon request</p>
-                            </div>`
-                    }
-                }
-            ];
-            
-            // Check if any sections are missing and restore them with proper template
-            const missingSections = sectionTemplates.filter(section => !tempDiv.querySelector(`#${section.id}`));
-            
-            if (missingSections.length > 0) {
-                console.warn('Restoring missing sections with templates:', missingSections.map(s => s.id));
-                
-                // Create and append missing sections with proper template
-                missingSections.forEach(section => {
-                    const sectionHtml = `
-                        <div class="section" id="${section.id}">
-                            <div class="${section.template.classes.join(' ')}">
-                                <hr class="hr-above">
-                                <h4><strong>${section.template.title}</strong></h4>
-                                <hr class="hr-below">
-                            </div>
-                            ${section.template.defaultContent}
-                        </div>
-                    `;
-                    tempDiv.innerHTML += sectionHtml;
-                });
-            }
-            
-            // Update the page content
-            document.querySelector('#page').innerHTML = tempDiv.innerHTML;
+            document.querySelector('#page').innerHTML = savedContent;
             console.log('Resume content loaded successfully');
-            
-            // Wait for DOM to update
-            setTimeout(() => {
-                // Restore section visibility if we had it
-                if (currentVisibility && window.setSectionVisibility) {
-                    window.setSectionVisibility(currentVisibility);
-                } else {
-                    // Otherwise initialize with default state
-                    initializeSectionToggles();
-                }
-                
-                // Reapply template settings
-                defaultTemplateVars.forEach(templateVar => {
-                    $(`#${templateVar}`).click();
-                });
-            }, 0);
         }
     } catch (error) {
         console.error('Error loading resume:', error);
@@ -613,91 +153,270 @@ function template(value)
 	}
 }
 
-// Section toggle handling
-function toggleSection(sectionId, isVisible) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-        section.style.display = isVisible ? 'block' : 'none';
-        
-        // Update saved state
-        const savedState = JSON.parse(localStorage.getItem('sectionVisibility') || '{}');
-        savedState[sectionId] = isVisible;
-        localStorage.setItem('sectionVisibility', JSON.stringify(savedState));
-    }
+function toggleSection(sectionName,toggleState)
+{
+	if(toggleState==true)
+		$('input[value="'+sectionName+'"]').attr('checked','true');
+	else
+		$('input[value="'+sectionName+'"]').removeAttr('checked');
+	$('#'+sectionName).toggle();
 }
 
-// Initialize section toggles
-function initializeSectionToggles() {
-    // Initialize section visibility based on saved state or defaults
-    const defaultVisibleSections = {
-        'sectionMission': true,
-        'sectionEducation': true,
-        'sectionExperience': true,
-        'sectionSkills': true,
-        'sectionProjects': true,
-        'sectionPublications': true,
-        'sectionAchievements': true,
-        'sectionResponsibility': true,
-        'sectionCourses': true,
-        'sectionExtraCurriculars': true,
-        'sectionReferences': true
-    };
+function changeTemplate(toggleType,toggleValue)
+{
+	switch(toggleType)
+	{
+		case 'minor':
+			if(toggleValue=='minorShow')
+			{
+				$('#contentMinor').show();
+				$('#image_box').css('margin-top','35px');
+			}
+			else
+			{
+				$('#contentMinor').hide();
+				$('#image_box').css('margin-top','25px');
+			}
+			break;
+		case 'contact':
+			if(toggleValue=='contact3')
+			{
+				$('#contactLink1').hide();
+				$('#contactLink2').hide();
+			}
+			else if(toggleValue=='contact4')
+			{
+				$('#contactLink1').show();
+				$('#contactLink2').hide();
+			}
+			else
+			{
+				$('#contactLink1').show();
+				$('#contactLink2').show();
+			}
+			break;
+		case 'margin':
+			if(toggleValue=='margin1')
+				$('#page').css('padding','0.2cm 1cm 1cm 1cm');
+			else if(toggleValue=='margin2')
+				$('#page').css('padding','0.2cm 1.1cm 1cm 1.1cm');
+			else if(toggleValue=='margin3')
+				$('#page').css('padding','0.2cm 1.2cm 1cm 1.2cm');
+			else if(toggleValue=='margin4')
+				$('#page').css('padding','0.2cm 1.3cm 1cm 1.3cm');
+			else if(toggleValue=='margin5')
+				$('#page').css('padding','0.2cm 1.4cm 1cm 1.4cm');
+			else if(toggleValue=='margin6')
+				$('#page').css('padding','0.2cm 1.5cm 1cm 1.5cm');
+			break;
+		case 'line':
+			if(toggleValue=='line1')
+				$('#page').css('line-height','1.1em');
+			else if(toggleValue=='line2')
+				$('#page').css('line-height','1.2em');
+			else if(toggleValue=='line3')
+				$('#page').css('line-height','1.3em');
+			else if(toggleValue=='line4')
+				$('#page').css('line-height','1.4em');
+			else if(toggleValue=='line5')
+				$('#page').css('line-height','1.5em');
+			else if(toggleValue=='line6')
+				$('#page').css('line-height','1.6em');
+			break;
+		case 'column':
+			if(toggleValue=='column1')
+				$('.table tbody tr td:nth-child(1)').toggleClass('text-center');
+			else if(toggleValue=='column2')
+				$('.table tbody tr td:nth-child(2)').toggleClass('text-center');
+			else if(toggleValue=='column3')
+				$('.table tbody tr td:nth-child(3)').toggleClass('text-center');
+			else if(toggleValue=='column4')
+				$('.table tbody tr td:nth-child(4)').toggleClass('text-center');
+			break;
 
-    // Load saved visibility state or use defaults
-    const savedState = localStorage.getItem('sectionVisibility');
-    const visibilityState = savedState ? JSON.parse(savedState) : defaultVisibleSections;
+		case 'font':
+			if(toggleValue=='fontVerdanaSans')
+				$('#page').removeClass('droid').removeClass('roboto').removeClass('verdana-serif').addClass('verdana-sans');
+			else if(toggleValue=='fontVerdanaSerif')
+				$('#page').removeClass('verdana-sans').removeClass('droid').removeClass('roboto').addClass('verdana-serif');
+			else if(toggleValue=='fontRoboto')
+				$('#page').removeClass('verdana-serif').removeClass('verdana-sans').removeClass('droid').addClass('roboto');
+			else if(toggleValue=='fontDroid')
+				$('#page').removeClass('roboto').removeClass('verdana-serif').removeClass('verdana-sans').addClass('droid');
+			break;
+		case 'case':
+			if(toggleValue=='caseNormal')
+				$('.section-title').removeClass('uppercase');
+			else
+				$('.section-title').addClass('uppercase');
+			break;
+		case 'title':
+			if(toggleValue=='titleRuled')
+			{
+				$('.section-title').removeClass('shaded');
+				$('.section-title').addClass('ruled');
+			}
+			else
+			{
+				$('.section-title').removeClass('ruled');
+				$('.section-title').addClass('shaded');
+			}
+			break;
+		case 'rule':
+			if(toggleValue=='ruleAbove')
+			{
+				$('.section-title').removeClass('rule-below');
+				$('.section-title').addClass('rule-above');
+			}
+			else
+			{
+				$('.section-title').removeClass('rule-above');
+				$('.section-title').addClass('rule-below');
+			}
+			break;
 
-    // Apply visibility state to sections and checkboxes
-    Object.entries(visibilityState).forEach(([sectionId, isVisible]) => {
-        const section = document.getElementById(sectionId);
-        const checkbox = document.querySelector(`input[data-section="${sectionId}"]`);
-        
-        if (section && checkbox) {
-            section.style.display = isVisible ? 'block' : 'none';
-            checkbox.checked = isVisible;
-        }
-    });
-
-    // Save initial state if none exists
-    if (!savedState) {
-        localStorage.setItem('sectionVisibility', JSON.stringify(visibilityState));
-    }
+		case 'image':
+			if(toggleValue=='imageShow')
+			{
+				$('#image_box').show();
+				$('#info').css('margin-left','0px');
+			}
+			else
+			{
+				$('#image_box').hide();
+				$('#info').css('margin-left','20px');
+			}
+			break;
+		case 'roll':
+			if(toggleValue=='rollShow')
+			{
+				$('#contentRoll').show();
+				$('#info').css('margin-top','0px');
+			}
+			else
+			{
+				$('#contentRoll').hide();
+				$('#info').css('margin-top','10px');
+			}
+			break;
+		case 'course':
+			if(toggleValue=='course1')
+			{
+				$('#contentBranch').hide();
+				$('#contentCourse').text('B.Tech - '+$('#contentBranch').text());
+			}
+			else
+			{
+				$('#contentBranch').show();
+				$('#contentCourse').text('B.Tech undergraduate');
+			}
+			break;
+		case 'table':
+			if(toggleValue=='tableShow')
+			{
+				$('#educationTable').removeClass('borderless');
+				$('#educationTable').addClass('customBordered');
+			}
+			else
+			{
+				$('#educationTable').removeClass('customBordered');
+				$('#educationTable').addClass('borderless');
+			}
+			break;
+		case 'edyear':
+			if(toggleValue=='edyearFirst')
+			{
+				$("#educationTable tr").each(function () {
+					$(this).find("td").eq(0).before($(this).find("td").eq(3));
+				});
+				var temp = document.getElementById('column4').className;
+				document.getElementById('column4').className = document.getElementById('column3').className;
+				document.getElementById('column3').className = document.getElementById('column2').className;
+				document.getElementById('column2').className = document.getElementById('column1').className;
+				document.getElementById('column1').className = temp;
+			}
+			else
+			{
+				$("#educationTable tr").each(function () {
+					$(this).find("td").eq(3).after($(this).find("td").eq(0));
+				});
+				var temp = document.getElementById('column1').className;
+				document.getElementById('column1').className = document.getElementById('column2').className;
+				document.getElementById('column2').className = document.getElementById('column3').className;
+				document.getElementById('column3').className = document.getElementById('column4').className;
+				document.getElementById('column4').className = temp;
+			}
+			break;
+		case 'experience':
+			if(toggleValue=='experience1')
+			{
+				$("#sectionExperience .title , #sectionExperience .time").css('display','inline-block');
+				$("#sectionExperience .time").addClass('right').removeClass('tab');
+				$("#sectionExperience .link").show();
+			}
+			else
+			{
+				$("#sectionExperience .title , #sectionExperience .time").css('display','block');
+				$("#sectionExperience .time").removeClass('right').addClass('tab');
+				$("#sectionExperience .link").hide();
+			}
+			break;
+		case 'projects':
+			if(toggleValue=='projects1')
+			{
+				$("#sectionProjects .title , #sectionProjects .time").css('display','inline-block');
+				$("#sectionProjects .time").addClass('right').removeClass('tab');
+				$("#sectionProjects .mentor , #sectionProjects .link").show();
+			}
+			else
+			{
+				$("#sectionProjects .title , #sectionProjects .time").css('display','block');
+				$("#sectionProjects .time").removeClass('right').addClass('tab');
+				$("#sectionProjects .mentor , #sectionProjects .link").hide();
+			}
+			break;
+	}
 }
 
-// Initialize on document ready
-$(document).ready(function() {
-    console.log('Document ready, initializing toggles');
-    initializeSectionToggles();
-    
-    // Reinitialize after loading saved content
-    $(window).on('loadResumeContent', function() {
-        console.log('Content loaded, reinitializing toggles');
-        initializeSectionToggles();
-    });
+function getSelectionContainerElement()
+{
+	var range, sel, container;
+	if (document.selection && document.selection.createRange)
+	{
+		range = document.selection.createRange();
+		return range.parentElement();
+	}
+	else if (window.getSelection)
+	{
+		sel = window.getSelection();
+		if (sel.getRangeAt)
+		{
+			if (sel.rangeCount > 0)
+				range = sel.getRangeAt(0);
+		}
+		else
+		{
+			// Old WebKit selection object has no getRangeAt, so
+			// create a range from other selection properties
+			range = document.createRange();
+			range.setStart(sel.anchorNode, sel.anchorOffset);
+			range.setEnd(sel.focusNode, sel.focusOffset);
+			// Handle the case when the selection was selected backwards (from the end to the start in the document)
+			if (range.collapsed !== sel.isCollapsed)
+			{
+				range.setStart(sel.focusNode, sel.focusOffset);
+				range.setEnd(sel.anchorNode, sel.anchorOffset);
+			}
+		}
+		if (range)
+		{
+			container = range.commonAncestorContainer;
+			// Check if the container is a text node and return its parent if so
+			return container.nodeType === 3 ? container.parentNode : container;
+		}
+	}
+}
 
-    // Save section visibility state when saving resume
-    window.getSectionVisibility = function() {
-        const visibility = {};
-        $('input[name="sectionToggle"]').each(function() {
-            visibility[$(this).val()] = $(this).prop('checked');
-        });
-        return visibility;
-    };
-
-    // Restore section visibility state when loading resume
-    window.setSectionVisibility = function(visibility) {
-        if (!visibility) return;
-        
-        Object.entries(visibility).forEach(([sectionId, isVisible]) => {
-            const checkbox = $(`input[name="sectionToggle"][value="${sectionId}"]`);
-            checkbox.prop('checked', isVisible);
-            const section = $(`#${sectionId}`);
-            if (section.length) {
-                section.toggle(isVisible);
-            }
-        });
-        
-        // Reinitialize toggle handlers after restoring visibility
-        initializeSectionToggles();
-    };
-});
+function insertAfter(referenceNode,newNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+}

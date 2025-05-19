@@ -1,5 +1,7 @@
 // Configuration
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:3000' 
+    : 'https://your-production-api-url.com'; // Replace with your actual production API URL
 
 // Auth state management
 let authToken = localStorage.getItem('authToken');
@@ -97,7 +99,6 @@ async function handleSave(e) {
         }
         
         const content = $('#page').html();
-        const sectionVisibility = window.getSectionVisibility();
         
         // Save the resume
         const response = await fetch(`${API_BASE_URL}/api/resumes`, {
@@ -106,11 +107,7 @@ async function handleSave(e) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({ 
-                name: resumeName, 
-                content,
-                sectionVisibility 
-            })
+            body: JSON.stringify({ name: resumeName, content })
         });
 
         const data = await response.json();
@@ -317,17 +314,6 @@ async function loadResume(resumeId) {
         
         // Update the page content
         $('#page').html(data.content);
-        
-        // Restore section visibility if available
-        if (data.sectionVisibility) {
-            window.setSectionVisibility(data.sectionVisibility);
-        } else {
-            // If no visibility state is saved, reinitialize toggles with default state
-            if (typeof initializeSectionToggles === 'function') {
-                initializeSectionToggles();
-            }
-        }
-        
         showSuccess('Resume loaded successfully!');
         accountModal.modal('hide');
     } catch (error) {
@@ -343,12 +329,10 @@ async function loadResume(resumeId) {
 async function deleteResume(resumeId) {
     if (!authToken || !resumeId) return;
     
-    const deleteButton = $(`.delete-resume[data-resume-id="${resumeId}"]`);
-    const resumeItem = deleteButton.closest('.list-group-item');
-    
-    // Prevent multiple delete attempts
-    if (deleteButton.prop('disabled')) {
-        console.log('Delete already in progress');
+    const resumeItem = $(`.list-group-item[data-resume-id="${resumeId}"]`);
+    if (!resumeItem.length) {
+        console.log('Resume item not found in UI, refreshing list...');
+        await loadResumes();
         return;
     }
     
@@ -357,7 +341,7 @@ async function deleteResume(resumeId) {
     }
 
     try {
-        // Disable the button immediately to prevent double-clicks
+        const deleteButton = resumeItem.find('.delete-resume');
         deleteButton.prop('disabled', true).text('Deleting...');
         
         console.log('Attempting to delete resume:', resumeId);
@@ -368,38 +352,40 @@ async function deleteResume(resumeId) {
             }
         });
 
+        if (response.status === 404) {
+            // Resume already deleted, refresh the list
+            console.log('Resume not found, refreshing list...');
+            await loadResumes();
+            return;
+        }
+
         const data = await response.json();
 
         if (!response.ok) {
             throw new Error(data.error || `Failed to delete resume (${response.status})`);
         }
 
-        // Remove the item from the UI immediately
+        // Remove the item from UI immediately
         resumeItem.remove();
         
-        // Check if this was the last resume
+        // Show no resumes message if list is empty
         if ($('#resumeList .list-group-item').length === 0) {
             $('#noResumes').show();
         }
         
         showSuccess('Resume deleted successfully!');
-        
-        // Reload the resume list to ensure sync with server
-        await loadResumes();
     } catch (error) {
         console.error('Error deleting resume:', error);
         showError(error.message);
         
-        // If the error is a 404, the resume is already gone, so remove it from UI
+        // If we get a 404, refresh the list as the resume might have been deleted
         if (error.message.includes('404') || error.message.includes('not found')) {
-            resumeItem.remove();
-            if ($('#resumeList .list-group-item').length === 0) {
-                $('#noResumes').show();
-            }
+            await loadResumes();
         }
     } finally {
-        // Re-enable the button if the item still exists
-        if (resumeItem.length) {
+        // Reset button state if it still exists
+        const deleteButton = resumeItem.find('.delete-resume');
+        if (deleteButton.length) {
             deleteButton.prop('disabled', false).text('Delete');
         }
     }

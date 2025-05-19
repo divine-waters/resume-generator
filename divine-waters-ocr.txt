@@ -49,3 +49,5 @@ AI: Gemini Code Assist, Devin, CodeGPT, GPT-4, Cursor
 QA and Agile Methodologies: Shift-Left QA, Software Development Lifecycle (SDLC), Six Sigma
 Analytics and Data Reporting: Google Analytics 4, Google Tag Manager, Mixpanel
 Miscellaneous: Git, Unix Commands, Shell Scripting, Visual Studio Code, Android Studio SDK Tools.
+
+
