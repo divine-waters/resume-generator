@@ -321,6 +321,11 @@ async function loadResume(resumeId) {
         // Restore section visibility if available
         if (data.sectionVisibility) {
             window.setSectionVisibility(data.sectionVisibility);
+        } else {
+            // If no visibility state is saved, reinitialize toggles with default state
+            if (typeof initializeSectionToggles === 'function') {
+                initializeSectionToggles();
+            }
         }
         
         showSuccess('Resume loaded successfully!');
