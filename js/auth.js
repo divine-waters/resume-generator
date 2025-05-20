@@ -1,7 +1,7 @@
 // Configuration
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? 'http://localhost:3000' 
-    : 'https://your-production-api-url.com'; // Replace with your actual production API URL
+    : 'https://resume-generator-api.onrender.com'; // Will be updated after deployment
 
 // Auth state management
 let authToken = localStorage.getItem('authToken');

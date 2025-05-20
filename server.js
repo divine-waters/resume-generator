@@ -14,7 +14,9 @@ const app = express();
 app.use(express.json()); // Parse JSON bodies first
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(cors({
-    origin: '*', // In production, replace with your actual domain
+    origin: process.env.NODE_ENV === 'production' 
+        ? ['https://garrettgarrison.github.io', 'http://localhost:3000']
+        : '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));

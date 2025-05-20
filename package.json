@@ -9,7 +9,7 @@
     "test": "jest",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "prepare": "husky install"
+    "prepare": "[ \"$NODE_ENV\" != \"production\" ] && husky install || echo 'Skipping husky install in production'"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
